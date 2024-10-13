@@ -1,0 +1,1072 @@
+# PIPELINE DEFINITION
+# Name: image-classification-pipeline-with-serving-and-monitoring
+# Description: An example pipeline to train, deploy, and monitor an image classifier on the CIFAR-10 dataset.
+# Inputs:
+#    epochs: int [Default: 10.0]
+#    kserve_version: str [Default: 'v1beta1']
+#    namespace: str [Default: 'kubeflow']
+#    service_account_name: str [Default: 'sa-minio-kserve']
+#    service_name: str [Default: 'weather-model']
+# Outputs:
+#    evaluate-model-2-classification_report_metrics: system.ClassificationMetrics
+#    evaluate-model-2-evalution_metrics: system.Metrics
+#    evaluate-model-3-classification_report_metrics: system.ClassificationMetrics
+#    evaluate-model-3-evalution_metrics: system.Metrics
+#    evaluate-model-classification_report_metrics: system.ClassificationMetrics
+#    evaluate-model-evalution_metrics: system.Metrics
+#    preformance-check-deploy_model_metrics: system.Metrics
+#    train-model-inceptionv3-train_inceptionv3_metrics: system.Metrics
+#    train-model-resnet50-train_resnet50_metrics: system.Metrics
+#    train-model-simple-cnn-train_simple_cnn_metrics: system.Metrics
+components:
+  comp-deploy-model:
+    executorLabel: exec-deploy-model
+    inputDefinitions:
+      artifacts:
+        input_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+      parameters:
+        kserve_version:
+          defaultValue: v1beta1
+          isOptional: true
+          parameterType: STRING
+        namespace:
+          defaultValue: kubeflow
+          isOptional: true
+          parameterType: STRING
+        service_account_name:
+          defaultValue: sa-minio-kserve
+          isOptional: true
+          parameterType: STRING
+        service_name:
+          defaultValue: weather-model
+          isOptional: true
+          parameterType: STRING
+  comp-evaluate-model:
+    executorLabel: exec-evaluate-model
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        input_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        classification_report_metrics:
+          artifactType:
+            schemaTitle: system.ClassificationMetrics
+            schemaVersion: 0.0.1
+        evalution_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+  comp-evaluate-model-2:
+    executorLabel: exec-evaluate-model-2
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        input_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        classification_report_metrics:
+          artifactType:
+            schemaTitle: system.ClassificationMetrics
+            schemaVersion: 0.0.1
+        evalution_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+  comp-evaluate-model-3:
+    executorLabel: exec-evaluate-model-3
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        input_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        classification_report_metrics:
+          artifactType:
+            schemaTitle: system.ClassificationMetrics
+            schemaVersion: 0.0.1
+        evalution_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+  comp-monitor-model:
+    executorLabel: exec-monitor-model
+  comp-preformance-check:
+    executorLabel: exec-preformance-check
+    inputDefinitions:
+      artifacts:
+        evaluation_inceptionv3_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        evaluation_resnet50_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        evaluation_simple_cnn_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        trained_model_inceptionv3:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        trained_model_resnet50:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        trained_model_simple_cnn:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        deploy_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        deploy_model_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+  comp-prepare-data:
+    executorLabel: exec-prepare-data
+    outputDefinitions:
+      artifacts:
+        prepare_dataset:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+  comp-train-model-inceptionv3:
+    executorLabel: exec-train-model-inceptionv3
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+      parameters:
+        epochs:
+          defaultValue: 10.0
+          isOptional: true
+          parameterType: NUMBER_INTEGER
+    outputDefinitions:
+      artifacts:
+        train_inceptionv3_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        trained_model_inceptionv3:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+  comp-train-model-resnet50:
+    executorLabel: exec-train-model-resnet50
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+      parameters:
+        epochs:
+          defaultValue: 10.0
+          isOptional: true
+          parameterType: NUMBER_INTEGER
+    outputDefinitions:
+      artifacts:
+        train_resnet50_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        trained_model_resnet50:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+  comp-train-model-simple-cnn:
+    executorLabel: exec-train-model-simple-cnn
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+      parameters:
+        epochs:
+          defaultValue: 10.0
+          isOptional: true
+          parameterType: NUMBER_INTEGER
+    outputDefinitions:
+      artifacts:
+        train_simple_cnn_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        trained_model_simple_cnn:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-deploy-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - deploy_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'kserve' 'kubernetes'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef deploy_model(input_model: Input[Model], service_account_name:str=\"\
+          sa-minio-kserve\", namespace:str= \"kubeflow\", service_name:str=\"weather-model\"\
+          , kserve_version:str=\"v1beta1\"):\n    \"\"\"\n    Create kserve instance\n\
+          \    \"\"\"\n    from kubernetes import client, config\n    from kserve\
+          \ import KServeClient\n    from kserve import constants\n    from kserve\
+          \ import utils\n    from kserve import V1beta1InferenceService\n    from\
+          \ kserve import V1beta1InferenceServiceSpec\n    from kserve import V1beta1PredictorSpec\n\
+          \    from kserve import V1beta1TFServingSpec\n    from datetime import datetime\n\
+          \n    uri = input_model.uri.replace('minio://', '')\n    input_model_path\
+          \ = f\"s3://{uri}\"\n\n    # namespace = utils.get_default_target_namespace()\n\
+          \n\n    config.load_incluster_config()\n\n    now = datetime.now()\n   \
+          \ v = now.strftime(\"%Y-%m-%d--%H-%M-%S\")\n\n    api_version = constants.KSERVE_GROUP\
+          \ + '/' + kserve_version\n\n    isvc = V1beta1InferenceService(api_version=api_version,\n\
+          \                                   kind=constants.KSERVE_KIND,\n      \
+          \                             metadata=client.V1ObjectMeta(\n          \
+          \                             name=service_name, namespace=namespace, annotations={'sidecar.istio.io/inject':'false'}),\n\
+          \                                   spec=V1beta1InferenceServiceSpec(\n\
+          \                                   predictor=V1beta1PredictorSpec(\n  \
+          \                                     service_account_name=service_account_name,\n\
+          \                                       tensorflow=(V1beta1TFServingSpec(\n\
+          \                                           storage_uri=input_model_path))))\n\
+          \    )\n\n    KServe = KServeClient()\n    KServe.create(isvc)\n\n    print(f'Model\
+          \ deployed as an InferenceService: {service_name}')\n\n"
+        image: python:3.8
+    exec-evaluate-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'scikit-learn' 'seaborn' 'matplotlib' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_model(input_data: Input[Dataset], input_model: Input[Model],\
+          \ classification_report_metrics: Output[ClassificationMetrics], evalution_metrics:\
+          \ Output[Metrics]):\n    import tensorflow as tf\n    import numpy as np\n\
+          \    import os\n    import matplotlib.pyplot as plt\n    from sklearn.metrics\
+          \ import classification_report, confusion_matrix\n    import seaborn as\
+          \ sns\n    import json\n\n    x_test = np.load(os.path.join(input_data.path,\
+          \ 'x_test.npy'))\n    y_test = np.load(os.path.join(input_data.path, 'y_test.npy'))\n\
+          \n    # Normalize pixel values to be between 0 and 1\n    x_test = x_test.astype('float32')\
+          \ / 255.0\n\n    model = tf.keras.models.load_model(os.path.join(input_model.path,\
+          \ '1'))  ## here '1' is version of model\n\n    # loss, accuracy = model.evaluate(x_test,\
+          \ y_test)\n    y_pred = model.predict(x_test)\n    y_pred_classes = np.argmax(y_pred,\
+          \ axis=1)\n    y_true_classes = y_test.flatten()\n\n    class_names = ['airplane',\
+          \ 'automobile', 'bird', 'cat', 'deer',\n                   'dog', 'frog',\
+          \ 'horse', 'ship', 'truck']\n\n    report = classification_report(y_true_classes,\
+          \ y_pred_classes, output_dict=True)\n    cm = confusion_matrix(y_true_classes,\
+          \ y_pred_classes)\n\n    # Plot confusion matrix\n    plt.figure(figsize=(10,\
+          \ 8))\n    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names,\
+          \ yticklabels=class_names)\n    plt.xlabel('Predicted')\n    plt.ylabel('True')\n\
+          \    plt.title('Confusion Matrix')\n    plt.savefig(input_model.path + '/evaluation_metrics_and_confusion_matrix_graph.png')\n\
+          \n    # Log the confusion matrix with both matrix and categories arguments\n\
+          \    classification_report_metrics.log_confusion_matrix(matrix=cm.tolist(),\
+          \ categories=class_names)\n\n    evalution_metrics.log_metric(\"precision\"\
+          , report['weighted avg']['precision'])\n    evalution_metrics.log_metric(\"\
+          recall\", report['weighted avg']['recall'])\n    evalution_metrics.log_metric(\"\
+          f1-score\", report['weighted avg']['f1-score'])\n\n\n    # print(f'Model\
+          \ evaluation complete. Loss: {loss}, Accuracy: {accuracy}')\n    print(\"\
+          \\n---- Model Evaluation Complete ----\")\n\n"
+        image: python:3.8
+    exec-evaluate-model-2:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'scikit-learn' 'seaborn' 'matplotlib' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_model(input_data: Input[Dataset], input_model: Input[Model],\
+          \ classification_report_metrics: Output[ClassificationMetrics], evalution_metrics:\
+          \ Output[Metrics]):\n    import tensorflow as tf\n    import numpy as np\n\
+          \    import os\n    import matplotlib.pyplot as plt\n    from sklearn.metrics\
+          \ import classification_report, confusion_matrix\n    import seaborn as\
+          \ sns\n    import json\n\n    x_test = np.load(os.path.join(input_data.path,\
+          \ 'x_test.npy'))\n    y_test = np.load(os.path.join(input_data.path, 'y_test.npy'))\n\
+          \n    # Normalize pixel values to be between 0 and 1\n    x_test = x_test.astype('float32')\
+          \ / 255.0\n\n    model = tf.keras.models.load_model(os.path.join(input_model.path,\
+          \ '1'))  ## here '1' is version of model\n\n    # loss, accuracy = model.evaluate(x_test,\
+          \ y_test)\n    y_pred = model.predict(x_test)\n    y_pred_classes = np.argmax(y_pred,\
+          \ axis=1)\n    y_true_classes = y_test.flatten()\n\n    class_names = ['airplane',\
+          \ 'automobile', 'bird', 'cat', 'deer',\n                   'dog', 'frog',\
+          \ 'horse', 'ship', 'truck']\n\n    report = classification_report(y_true_classes,\
+          \ y_pred_classes, output_dict=True)\n    cm = confusion_matrix(y_true_classes,\
+          \ y_pred_classes)\n\n    # Plot confusion matrix\n    plt.figure(figsize=(10,\
+          \ 8))\n    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names,\
+          \ yticklabels=class_names)\n    plt.xlabel('Predicted')\n    plt.ylabel('True')\n\
+          \    plt.title('Confusion Matrix')\n    plt.savefig(input_model.path + '/evaluation_metrics_and_confusion_matrix_graph.png')\n\
+          \n    # Log the confusion matrix with both matrix and categories arguments\n\
+          \    classification_report_metrics.log_confusion_matrix(matrix=cm.tolist(),\
+          \ categories=class_names)\n\n    evalution_metrics.log_metric(\"precision\"\
+          , report['weighted avg']['precision'])\n    evalution_metrics.log_metric(\"\
+          recall\", report['weighted avg']['recall'])\n    evalution_metrics.log_metric(\"\
+          f1-score\", report['weighted avg']['f1-score'])\n\n\n    # print(f'Model\
+          \ evaluation complete. Loss: {loss}, Accuracy: {accuracy}')\n    print(\"\
+          \\n---- Model Evaluation Complete ----\")\n\n"
+        image: python:3.8
+    exec-evaluate-model-3:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'scikit-learn' 'seaborn' 'matplotlib' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_model(input_data: Input[Dataset], input_model: Input[Model],\
+          \ classification_report_metrics: Output[ClassificationMetrics], evalution_metrics:\
+          \ Output[Metrics]):\n    import tensorflow as tf\n    import numpy as np\n\
+          \    import os\n    import matplotlib.pyplot as plt\n    from sklearn.metrics\
+          \ import classification_report, confusion_matrix\n    import seaborn as\
+          \ sns\n    import json\n\n    x_test = np.load(os.path.join(input_data.path,\
+          \ 'x_test.npy'))\n    y_test = np.load(os.path.join(input_data.path, 'y_test.npy'))\n\
+          \n    # Normalize pixel values to be between 0 and 1\n    x_test = x_test.astype('float32')\
+          \ / 255.0\n\n    model = tf.keras.models.load_model(os.path.join(input_model.path,\
+          \ '1'))  ## here '1' is version of model\n\n    # loss, accuracy = model.evaluate(x_test,\
+          \ y_test)\n    y_pred = model.predict(x_test)\n    y_pred_classes = np.argmax(y_pred,\
+          \ axis=1)\n    y_true_classes = y_test.flatten()\n\n    class_names = ['airplane',\
+          \ 'automobile', 'bird', 'cat', 'deer',\n                   'dog', 'frog',\
+          \ 'horse', 'ship', 'truck']\n\n    report = classification_report(y_true_classes,\
+          \ y_pred_classes, output_dict=True)\n    cm = confusion_matrix(y_true_classes,\
+          \ y_pred_classes)\n\n    # Plot confusion matrix\n    plt.figure(figsize=(10,\
+          \ 8))\n    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names,\
+          \ yticklabels=class_names)\n    plt.xlabel('Predicted')\n    plt.ylabel('True')\n\
+          \    plt.title('Confusion Matrix')\n    plt.savefig(input_model.path + '/evaluation_metrics_and_confusion_matrix_graph.png')\n\
+          \n    # Log the confusion matrix with both matrix and categories arguments\n\
+          \    classification_report_metrics.log_confusion_matrix(matrix=cm.tolist(),\
+          \ categories=class_names)\n\n    evalution_metrics.log_metric(\"precision\"\
+          , report['weighted avg']['precision'])\n    evalution_metrics.log_metric(\"\
+          recall\", report['weighted avg']['recall'])\n    evalution_metrics.log_metric(\"\
+          f1-score\", report['weighted avg']['f1-score'])\n\n\n    # print(f'Model\
+          \ evaluation complete. Loss: {loss}, Accuracy: {accuracy}')\n    print(\"\
+          \\n---- Model Evaluation Complete ----\")\n\n"
+        image: python:3.8
+    exec-monitor-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - monitor_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'prometheus-client'\
+          \ 'matplotlib' 'psutil' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef monitor_model():\n    \"\"\"\n    This component simulates model\
+          \ monitoring by generating and pushing\n    performance metrics to a Prometheus\
+          \ Pushgateway.\n    \"\"\"\n    from prometheus_client import CollectorRegistry,\
+          \ Gauge, push_to_gateway\n    import time\n    import psutil  # To monitor\
+          \ resource utilization\n\n    # Initialize Prometheus registry and gauges\n\
+          \    registry = CollectorRegistry()\n    performance_gauge = Gauge('model_performance',\
+          \ 'Track model performance', registry=registry)\n    cpu_usage_gauge = Gauge('cpu_usage',\
+          \ 'Track CPU usage percentage', registry=registry)\n    memory_usage_gauge\
+          \ = Gauge('memory_usage', 'Track memory usage percentage', registry=registry)\n\
+          \n    for i in range(10):\n        # Simulating metrics update\n       \
+          \ accuracy = 0.85 + 0.01 * i  # Simulate increasing accuracy\n        performance_gauge.set(accuracy)\n\
+          \n        # Capture resource utilization\n        cpu_usage = psutil.cpu_percent()\n\
+          \        memory_usage = psutil.virtual_memory().percent\n        cpu_usage_gauge.set(cpu_usage)\n\
+          \        memory_usage_gauge.set(memory_usage)\n\n        # Push metrics\
+          \ to Prometheus Pushgateway\n        push_to_gateway('pushgateway:9091',\
+          \ job='model_monitoring', registry=registry)\n        time.sleep(30)  #\
+          \ Sleep for 30 seconds to simulate real-time tracking\n\n    print(\"Model\
+          \ performance and resource utilization metrics sent to Prometheus.\")\n\n"
+        image: python:3.8
+    exec-preformance-check:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - preformance_check
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef preformance_check(evaluation_simple_cnn_metrics: Input[Metrics],\
+          \ \n                      evaluation_resnet50_metrics: Input[Metrics], \n\
+          \                      evaluation_inceptionv3_metrics: Input[Metrics], \n\
+          \                      deploy_model_metrics: Output[Metrics], \n       \
+          \               trained_model_simple_cnn: Input[Model], \n             \
+          \         trained_model_resnet50: Input[Model], \n                     \
+          \ trained_model_inceptionv3: Input[Model], \n                      deploy_model:\
+          \ Output[Model]):\n\n\n    # Create list of tuples with model metrics and\
+          \ corresponding model\n    models = [\n        (evaluation_simple_cnn_metrics.metadata.get('f1-score'),\
+          \ trained_model_simple_cnn),\n        (evaluation_resnet50_metrics.metadata.get('f1-score'),\
+          \ trained_model_resnet50),\n        (evaluation_inceptionv3_metrics.metadata.get('f1-score'),\
+          \ trained_model_inceptionv3)\n    ]\n\n    # Find model with maximum F1\
+          \ score\n    max_f1_score, deploy_model = max(models, key=lambda x: x[0])\n\
+          \n    # Get tmetrics corresponding to selected model\n    if max_f1_score\
+          \ == evaluation_simple_cnn_metrics.metadata.get('f1-score'):\n        deploy_model_metrics.metadata.update(evaluation_simple_cnn_metrics.metadata)\n\
+          \        deploy_model.path = trained_model_simple_cnn.path\n\n    elif max_f1_score\
+          \ == evaluation_resnet50_metrics.metadata.get('f1-score'):\n        deploy_model_metrics.metadata.update(evaluation_resnet50_metrics.metadata)\n\
+          \        deploy_model.path = trained_model_resnet50.path\n\n    else:\n\
+          \        deploy_model_metrics.metadata.update(evaluation_inceptionv3_metrics.metadata)\n\
+          \        deploy_model.path = trained_model_inceptionv3.path\n\n    # Output\
+          \ the results\n    print(\"Deploy Model Metrics:\", deploy_model_metrics.metadata)\n\
+          \    print(\"Deploy Model:\", deploy_model.path)\n\n    print(\"\\n----\
+          \ Models Preformance Check Complete ----\")\n\n"
+        image: python:3.8
+    exec-prepare-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - prepare_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'matplotlib' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef prepare_data(prepare_dataset: Output[Dataset]):\n    import tensorflow\
+          \ as tf\n    import numpy as np\n    import os\n    import matplotlib.pyplot\
+          \ as plt\n\n    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()\n\
+          \n    data_path = prepare_dataset.path\n    os.makedirs(data_path, exist_ok=True)\n\
+          \n    np.save(os.path.join(data_path, 'x_train.npy'), x_train)\n    np.save(os.path.join(data_path,\
+          \ 'y_train.npy'), y_train)\n    np.save(os.path.join(data_path, 'x_test.npy'),\
+          \ x_test)\n    np.save(os.path.join(data_path, 'y_test.npy'), y_test)\n\n\
+          \    class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',\n \
+          \              'dog', 'frog', 'horse', 'ship', 'truck']\n\n    plt.figure(figsize=(10,10))\n\
+          \    for i in range(25):\n        plt.subplot(5,5,i+1)\n        plt.xticks([])\n\
+          \        plt.yticks([])\n        plt.grid(False)\n        plt.imshow(x_train[i])\n\
+          \        # The CIFAR labels happen to be arrays, \n        # which is why\
+          \ you need the extra index\n        plt.xlabel(class_names[y_train[i][0]])\n\
+          \    plt.savefig(data_path + '/dataset.png')\n\n    print(\"Data preparation\
+          \ is complete.\")\n\n"
+        image: python:3.8
+    exec-train-model-inceptionv3:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_model_inceptionv3
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'matplotlib' 'scikit-learn' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_model_inceptionv3(input_data: Input[Dataset], trained_model_inceptionv3:\
+          \ Output[Model], train_inceptionv3_metrics: Output[Metrics], epochs: int\
+          \ = 10):\n    import tensorflow as tf\n    import numpy as np\n    import\
+          \ os\n    import matplotlib.pyplot as plt\n    from sklearn.model_selection\
+          \ import train_test_split\n\n    x_train = np.load(os.path.join(input_data.path,\
+          \ 'x_train.npy'))\n    y_train = np.load(os.path.join(input_data.path, 'y_train.npy'))\n\
+          \n    # Normalize pixel values to be between 0 and 1\n    x_train = x_train.astype('float32')\
+          \ / 255.0\n\n    x_train, x_val, y_train, y_val = train_test_split(x_train,\
+          \ y_train, test_size=0.2, random_state=42)\n\n    datagen = tf.keras.preprocessing.image.ImageDataGenerator(\n\
+          \        rotation_range=15,\n        width_shift_range=0.1,\n        height_shift_range=0.1,\n\
+          \        horizontal_flip=True,\n        zoom_range=0.1\n    )\n\n    datagen.fit(x_train)\n\
+          \n    strategy = tf.distribute.MultiWorkerMirroredStrategy()\n    print(f'Number\
+          \ of devices:{strategy.num_replicas_in_sync}')\n\n    with strategy.scope():\n\
+          \n        inputs = tf.keras.layers.Input(shape=(32,32,3))\n        resized_input\
+          \ = tf.keras.layers.Resizing(75,75)(inputs)\n\n        base_model = tf.keras.applications.InceptionV3(weights=None,\
+          \ include_top=False, input_tensor=resized_input)\n\n        x= base_model.output\n\
+          \        x= tf.keras.layers.GlobalAveragePooling2D()(x)\n        x= tf.keras.layers.Dense(64,activation='relu')(x)\n\
+          \        predictions = tf.keras.layers.Dense(10,activation='softmax')(x)\n\
+          \n        model = tf.keras.models.Model(inputs=base_model.input, outputs=predictions)\n\
+          \n        model.compile(optimizer='adam',\n                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),\n\
+          \                  metrics=['accuracy'])\n\n        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',\
+          \ patience=3, restore_best_weights=True)\n\n        history = model.fit(datagen.flow(x_train,\
+          \ y_train, batch_size=64), validation_data=(x_val, y_val), epochs=epochs,\
+          \ callbacks=[early_stopping])\n\n    # Save the model\n    model.save(os.path.join(trained_model_inceptionv3.path,\
+          \ '1'))   ## here '1' is version of model\n\n    plt.plot(history.history['accuracy'],\
+          \ label='accuracy')\n    plt.plot(history.history['val_accuracy'], label\
+          \ = 'val_accuracy')\n    plt.xlabel('Epoch')\n    plt.ylabel('Accuracy')\n\
+          \    plt.ylim([0, 1])\n    plt.legend(loc='lower right')\n    plt.savefig(trained_model_inceptionv3.path\
+          \ + '/training_history.png')\n\n    train_inceptionv3_metrics.log_metric(\"\
+          accuracy\", max(history.history['accuracy']))\n    train_inceptionv3_metrics.log_metric(\"\
+          val_accuracy\", max(history.history['val_accuracy']))\n\n    print(\"Model\
+          \ training is complete.\")\n\n"
+        image: python:3.8
+    exec-train-model-resnet50:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_model_resnet50
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'matplotlib' 'scikit-learn' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_model_resnet50(input_data: Input[Dataset], trained_model_resnet50:\
+          \ Output[Model], train_resnet50_metrics: Output[Metrics], epochs: int =\
+          \ 10):\n    import tensorflow as tf\n    import numpy as np\n    import\
+          \ os\n    import matplotlib.pyplot as plt\n    from sklearn.model_selection\
+          \ import train_test_split\n\n    x_train = np.load(os.path.join(input_data.path,\
+          \ 'x_train.npy'))\n    y_train = np.load(os.path.join(input_data.path, 'y_train.npy'))\n\
+          \n    # Normalize pixel values to be between 0 and 1\n    x_train = x_train.astype('float32')\
+          \ / 255.0\n\n    x_train, x_val, y_train, y_val = train_test_split(x_train,\
+          \ y_train, test_size=0.2, random_state=42)\n\n    datagen = tf.keras.preprocessing.image.ImageDataGenerator(\n\
+          \        rotation_range=15,\n        width_shift_range=0.1,\n        height_shift_range=0.1,\n\
+          \        horizontal_flip=True,\n        zoom_range=0.1\n    )\n\n    datagen.fit(x_train)\n\
+          \n    strategy = tf.distribute.MultiWorkerMirroredStrategy()\n\n    with\
+          \ strategy.scope():\n\n        base_model = tf.keras.applications.ResNet50(weights=None,\
+          \ include_top=False, input_shape=(32,32,3))\n\n        x= base_model.output\n\
+          \        x= tf.keras.layers.GlobalAveragePooling2D()(x)\n        x= tf.keras.layers.Dense(64,activation='relu')(x)\n\
+          \        predictions = tf.keras.layers.Dense(10,activation='softmax')(x)\n\
+          \n        model = tf.keras.models.Model(inputs=base_model.input, outputs=predictions)\n\
+          \n        model.compile(optimizer='adam',\n                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),\n\
+          \                  metrics=['accuracy'])\n\n        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',\
+          \ patience=3, restore_best_weights=True)\n\n        history = model.fit(datagen.flow(x_train,\
+          \ y_train, batch_size=64), validation_data=(x_val, y_val), epochs=epochs,\
+          \ callbacks=[early_stopping])\n\n    # Save the model\n    model.save(os.path.join(trained_model_resnet50.path,\
+          \ '1'))    ## here '1' is version of model\n\n    plt.plot(history.history['accuracy'],\
+          \ label='accuracy')\n    plt.plot(history.history['val_accuracy'], label\
+          \ = 'val_accuracy')\n    plt.xlabel('Epoch')\n    plt.ylabel('Accuracy')\n\
+          \    plt.ylim([0, 1])\n    plt.legend(loc='lower right')\n    plt.savefig(trained_model_resnet50.path\
+          \ + '/training_history.png')\n\n    train_resnet50_metrics.log_metric(\"\
+          accuracy\", max(history.history['accuracy']))\n    train_resnet50_metrics.log_metric(\"\
+          val_accuracy\", max(history.history['val_accuracy']))\n\n    print(\"Model\
+          \ training is complete.\")\n\n"
+        image: python:3.8
+    exec-train-model-simple-cnn:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_model_simple_cnn
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'matplotlib' 'scikit-learn' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_model_simple_cnn(input_data: Input[Dataset], trained_model_simple_cnn:\
+          \ Output[Model], train_simple_cnn_metrics: Output[Metrics], epochs: int\
+          \ = 10):\n    import tensorflow as tf\n    import numpy as np\n    import\
+          \ os\n    import matplotlib.pyplot as plt\n    from sklearn.model_selection\
+          \ import train_test_split\n\n    x_train = np.load(os.path.join(input_data.path,\
+          \ 'x_train.npy'))\n    y_train = np.load(os.path.join(input_data.path, 'y_train.npy'))\n\
+          \n    # Normalize pixel values to be between 0 and 1\n    x_train = x_train.astype('float32')\
+          \ / 255.0\n\n    x_train, x_val, y_train, y_val = train_test_split(x_train,\
+          \ y_train, test_size=0.2, random_state=42)\n\n    datagen = tf.keras.preprocessing.image.ImageDataGenerator(\n\
+          \        rotation_range=15,\n        width_shift_range=0.1,\n        height_shift_range=0.1,\n\
+          \        horizontal_flip=True,\n        zoom_range=0.1\n    )\n\n    datagen.fit(x_train)\n\
+          \n    strategy = tf.distribute.MultiWorkerMirroredStrategy()\n\n    with\
+          \ strategy.scope():\n        model = tf.keras.models.Sequential([\n    \
+          \        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32,\
+          \ 32, 3)),\n            tf.keras.layers.MaxPooling2D((2, 2)),\n        \
+          \    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),\n          \
+          \  tf.keras.layers.MaxPooling2D((2, 2)),\n            tf.keras.layers.Conv2D(64,\
+          \ (3, 3), activation='relu'),\n            tf.keras.layers.Flatten(),\n\
+          \            tf.keras.layers.Dense(64, activation='relu'),\n           \
+          \ tf.keras.layers.Dense(10)\n        ])\n\n        model.compile(optimizer='adam',\n\
+          \                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),\n\
+          \                  metrics=['accuracy'])\n\n        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',\
+          \ patience=3, restore_best_weights=True)\n\n        history = model.fit(datagen.flow(x_train,\
+          \ y_train, batch_size=64), validation_data=(x_val, y_val), epochs=epochs,\
+          \ callbacks=[early_stopping])\n\n    # Save the model\n    model.save(os.path.join(trained_model_simple_cnn.path,\
+          \ '1'))  ## here '1' is version of model\n\n    plt.plot(history.history['accuracy'],\
+          \ label='accuracy')\n    plt.plot(history.history['val_accuracy'], label\
+          \ = 'val_accuracy')\n    plt.xlabel('Epoch')\n    plt.ylabel('Accuracy')\n\
+          \    plt.ylim([0, 1])\n    plt.legend(loc='lower right')\n    plt.savefig(trained_model_simple_cnn.path\
+          \ + '/training_history.png')\n\n    train_simple_cnn_metrics.log_metric(\"\
+          accuracy\", max(history.history['accuracy']))\n    train_simple_cnn_metrics.log_metric(\"\
+          val_accuracy\", max(history.history['val_accuracy']))\n\n    print(\"Model\
+          \ training is complete.\")\n\n"
+        image: python:3.8
+pipelineInfo:
+  description: An example pipeline to train, deploy, and monitor an image classifier
+    on the CIFAR-10 dataset.
+  name: image-classification-pipeline-with-serving-and-monitoring
+root:
+  dag:
+    outputs:
+      artifacts:
+        evaluate-model-2-classification_report_metrics:
+          artifactSelectors:
+          - outputArtifactKey: classification_report_metrics
+            producerSubtask: evaluate-model-2
+        evaluate-model-2-evalution_metrics:
+          artifactSelectors:
+          - outputArtifactKey: evalution_metrics
+            producerSubtask: evaluate-model-2
+        evaluate-model-3-classification_report_metrics:
+          artifactSelectors:
+          - outputArtifactKey: classification_report_metrics
+            producerSubtask: evaluate-model-3
+        evaluate-model-3-evalution_metrics:
+          artifactSelectors:
+          - outputArtifactKey: evalution_metrics
+            producerSubtask: evaluate-model-3
+        evaluate-model-classification_report_metrics:
+          artifactSelectors:
+          - outputArtifactKey: classification_report_metrics
+            producerSubtask: evaluate-model
+        evaluate-model-evalution_metrics:
+          artifactSelectors:
+          - outputArtifactKey: evalution_metrics
+            producerSubtask: evaluate-model
+        preformance-check-deploy_model_metrics:
+          artifactSelectors:
+          - outputArtifactKey: deploy_model_metrics
+            producerSubtask: preformance-check
+        train-model-inceptionv3-train_inceptionv3_metrics:
+          artifactSelectors:
+          - outputArtifactKey: train_inceptionv3_metrics
+            producerSubtask: train-model-inceptionv3
+        train-model-resnet50-train_resnet50_metrics:
+          artifactSelectors:
+          - outputArtifactKey: train_resnet50_metrics
+            producerSubtask: train-model-resnet50
+        train-model-simple-cnn-train_simple_cnn_metrics:
+          artifactSelectors:
+          - outputArtifactKey: train_simple_cnn_metrics
+            producerSubtask: train-model-simple-cnn
+    tasks:
+      deploy-model:
+        cachingOptions: {}
+        componentRef:
+          name: comp-deploy-model
+        dependentTasks:
+        - preformance-check
+        inputs:
+          artifacts:
+            input_model:
+              taskOutputArtifact:
+                outputArtifactKey: deploy_model
+                producerTask: preformance-check
+          parameters:
+            kserve_version:
+              componentInputParameter: kserve_version
+            namespace:
+              componentInputParameter: namespace
+            service_account_name:
+              componentInputParameter: service_account_name
+            service_name:
+              componentInputParameter: service_name
+        taskInfo:
+          name: deploy-model
+      evaluate-model:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-model
+        dependentTasks:
+        - prepare-data
+        - train-model-simple-cnn
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: prepare_dataset
+                producerTask: prepare-data
+            input_model:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model_simple_cnn
+                producerTask: train-model-simple-cnn
+        taskInfo:
+          name: evaluate-model
+      evaluate-model-2:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-model-2
+        dependentTasks:
+        - prepare-data
+        - train-model-resnet50
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: prepare_dataset
+                producerTask: prepare-data
+            input_model:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model_resnet50
+                producerTask: train-model-resnet50
+        taskInfo:
+          name: evaluate-model-2
+      evaluate-model-3:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-model-3
+        dependentTasks:
+        - prepare-data
+        - train-model-inceptionv3
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: prepare_dataset
+                producerTask: prepare-data
+            input_model:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model_inceptionv3
+                producerTask: train-model-inceptionv3
+        taskInfo:
+          name: evaluate-model-3
+      monitor-model:
+        cachingOptions: {}
+        componentRef:
+          name: comp-monitor-model
+        dependentTasks:
+        - deploy-model
+        taskInfo:
+          name: monitor-model
+      preformance-check:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-preformance-check
+        dependentTasks:
+        - evaluate-model
+        - evaluate-model-2
+        - evaluate-model-3
+        - train-model-inceptionv3
+        - train-model-resnet50
+        - train-model-simple-cnn
+        inputs:
+          artifacts:
+            evaluation_inceptionv3_metrics:
+              taskOutputArtifact:
+                outputArtifactKey: evalution_metrics
+                producerTask: evaluate-model-3
+            evaluation_resnet50_metrics:
+              taskOutputArtifact:
+                outputArtifactKey: evalution_metrics
+                producerTask: evaluate-model-2
+            evaluation_simple_cnn_metrics:
+              taskOutputArtifact:
+                outputArtifactKey: evalution_metrics
+                producerTask: evaluate-model
+            trained_model_inceptionv3:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model_inceptionv3
+                producerTask: train-model-inceptionv3
+            trained_model_resnet50:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model_resnet50
+                producerTask: train-model-resnet50
+            trained_model_simple_cnn:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model_simple_cnn
+                producerTask: train-model-simple-cnn
+        taskInfo:
+          name: preformance-check
+      prepare-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-prepare-data
+        taskInfo:
+          name: prepare-data
+      train-model-inceptionv3:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-model-inceptionv3
+        dependentTasks:
+        - prepare-data
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: prepare_dataset
+                producerTask: prepare-data
+          parameters:
+            epochs:
+              componentInputParameter: epochs
+        taskInfo:
+          name: train-model-inceptionv3
+      train-model-resnet50:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-model-resnet50
+        dependentTasks:
+        - prepare-data
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: prepare_dataset
+                producerTask: prepare-data
+          parameters:
+            epochs:
+              componentInputParameter: epochs
+        taskInfo:
+          name: train-model-resnet50
+      train-model-simple-cnn:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-model-simple-cnn
+        dependentTasks:
+        - prepare-data
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: prepare_dataset
+                producerTask: prepare-data
+          parameters:
+            epochs:
+              componentInputParameter: epochs
+        taskInfo:
+          name: train-model-simple-cnn
+  inputDefinitions:
+    parameters:
+      epochs:
+        defaultValue: 10.0
+        isOptional: true
+        parameterType: NUMBER_INTEGER
+      kserve_version:
+        defaultValue: v1beta1
+        isOptional: true
+        parameterType: STRING
+      namespace:
+        defaultValue: kubeflow
+        isOptional: true
+        parameterType: STRING
+      service_account_name:
+        defaultValue: sa-minio-kserve
+        isOptional: true
+        parameterType: STRING
+      service_name:
+        defaultValue: weather-model
+        isOptional: true
+        parameterType: STRING
+  outputDefinitions:
+    artifacts:
+      evaluate-model-2-classification_report_metrics:
+        artifactType:
+          schemaTitle: system.ClassificationMetrics
+          schemaVersion: 0.0.1
+      evaluate-model-2-evalution_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      evaluate-model-3-classification_report_metrics:
+        artifactType:
+          schemaTitle: system.ClassificationMetrics
+          schemaVersion: 0.0.1
+      evaluate-model-3-evalution_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      evaluate-model-classification_report_metrics:
+        artifactType:
+          schemaTitle: system.ClassificationMetrics
+          schemaVersion: 0.0.1
+      evaluate-model-evalution_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      preformance-check-deploy_model_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      train-model-inceptionv3-train_inceptionv3_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      train-model-resnet50-train_resnet50_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      train-model-simple-cnn-train_simple_cnn_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.8.0

@@ -1,0 +1,300 @@
+# PIPELINE DEFINITION
+# Name: time-series-forecasting-pipeline
+# Description: A pipeline to train and deploy a time series forecasting model.
+# Inputs:
+#    epochs: int [Default: 10.0]
+# Outputs:
+#    evaluate-model-evaluation_metrics: system.Metrics
+#    train-model-train_metrics: system.Metrics
+components:
+  comp-evaluate-model:
+    executorLabel: exec-evaluate-model
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        input_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        evaluation_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+  comp-preprocess-data:
+    executorLabel: exec-preprocess-data
+    outputDefinitions:
+      artifacts:
+        output_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+  comp-train-model:
+    executorLabel: exec-train-model
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+      parameters:
+        epochs:
+          defaultValue: 10.0
+          isOptional: true
+          parameterType: NUMBER_INTEGER
+    outputDefinitions:
+      artifacts:
+        train_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+        trained_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-evaluate-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'scikit-learn' 'matplotlib' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_model(input_data: Input[Dataset], input_model: Input[Model],\
+          \ evaluation_metrics: Output[Metrics]):\n    import tensorflow as tf\n \
+          \   import numpy as np\n    import os\n    import matplotlib.pyplot as plt\n\
+          \    from sklearn.metrics import mean_squared_error, mean_absolute_error\n\
+          \n    print('Information about the artifact')\n    print('Name:', input_model.name)\n\
+          \    print('URI:', input_model.uri)\n    print('Path:', input_model.path)\n\
+          \    print('Metadata:', input_model.metadata)\n\n    # Load test data\n\
+          \    test_data = np.load(os.path.join(input_data.path, 'test.npy'))\n\n\
+          \    # Prepare test data for LSTM\n    def create_dataset(data, time_steps=1):\n\
+          \        X, y = [], []\n        for i in range(len(data) - time_steps):\n\
+          \            v = data[i:(i + time_steps), 0]\n            X.append(v)\n\
+          \            y.append(data[i + time_steps, 0])\n        return np.array(X),\
+          \ np.array(y)\n\n    time_steps = 24\n    X_test, y_test = create_dataset(test_data,\
+          \ time_steps)\n    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1],\
+          \ 1))\n\n    # Load the trained model\n    model = tf.keras.models.load_model(os.path.join(input_model.path,\
+          \ 'weather_model'))\n\n    # Make predictions\n    y_pred = model.predict(X_test)\n\
+          \n    # Calculate metrics\n    mse = mean_squared_error(y_test, y_pred)\n\
+          \    mae = mean_absolute_error(y_test, y_pred)\n\n    # Log metrics\n  \
+          \  evaluation_metrics.log_metric(\"mse\", mse)\n    evaluation_metrics.log_metric(\"\
+          mae\", mae)\n\n    # Plot actual vs predicted values\n    plt.figure(figsize=(12,\
+          \ 6))\n    plt.plot(y_test[:100], label='Actual')\n    plt.plot(y_pred[:100],\
+          \ label='Predicted')\n    plt.legend()\n    plt.title('Actual vs Predicted\
+          \ Values')\n    plt.savefig(os.path.join(input_model.path, 'actual_vs_predicted.png'))\n\
+          \n    print(\"Model evaluation is complete.\")\n\n"
+        image: python:3.8
+    exec-preprocess-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - preprocess_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'numpy'\
+          \ 'scikit-learn' 'tensorflow' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef preprocess_data(output_data: Output[Dataset]):\n    import pandas\
+          \ as pd\n    import numpy as np\n    from sklearn.impute import SimpleImputer\n\
+          \    from sklearn.preprocessing import RobustScaler\n    from sklearn.model_selection\
+          \ import train_test_split\n    import requests\n    import zipfile\n   \
+          \ import io\n\n    url = 'https://s3.amazonaws.com/keras-datasets/jena_climate_2009_2016.csv.zip'\n\
+          \n    response = requests.get(url)\n    response.raise_for_status()  # Check\
+          \ for HTTP errors\n    zip_file = io.BytesIO(response.content)\n\n    #\
+          \ Unzip the file\n    with zipfile.ZipFile(zip_file, 'r') as zip_ref:\n\
+          \        zip_ref.extractall()\n\n    csv_path = 'jena_climate_2009_2016.csv'\n\
+          \    # Load the dataset\n    df = pd.read_csv(csv_path)\n\n    # Convert\
+          \ the date-time column to datetime format and drop it from the DataFrame\n\
+          \    df['Date Time'] = pd.to_datetime(df['Date Time'], format='%d.%m.%Y\
+          \ %H:%M:%S')\n    df_numeric = df.drop(columns=['Date Time'])  # Keep only\
+          \ numeric columns\n\n    # Handle missing values\n    imputer = SimpleImputer(strategy='mean')\n\
+          \    df_imputed = pd.DataFrame(imputer.fit_transform(df_numeric), columns=df_numeric.columns)\n\
+          \n    # Handle outliers using RobustScaler\n    scaler = RobustScaler()\n\
+          \    df_scaled = pd.DataFrame(scaler.fit_transform(df_imputed), columns=df_imputed.columns)\n\
+          \n    # Split the data into train, validation, and test sets\n    train_val,\
+          \ test = train_test_split(df_scaled, test_size=0.2, shuffle=False)\n   \
+          \ train, val = train_test_split(train_val, test_size=0.2, shuffle=False)\n\
+          \n    # Save preprocessed data\n    data_path = output_data.path\n    os.makedirs(data_path,\
+          \ exist_ok=True)\n    np.save(os.path.join(data_path, 'train.npy'), train)\n\
+          \    np.save(os.path.join(data_path, 'val.npy'), val)\n    np.save(os.path.join(data_path,\
+          \ 'test.npy'), test)\n\n    print(\"Data preprocessing is complete.\")\n\
+          \n"
+        image: python:3.8
+    exec-train-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.8.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'tensorflow'\
+          \ 'numpy' 'scikit-learn' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_model(input_data: Input[Dataset], trained_model: Output[Model],\
+          \ train_metrics: Output[Metrics], epochs: int = 10):\n    import tensorflow\
+          \ as tf\n    import numpy as np\n    import os\n\n    with open(input_data.path)\
+          \ as f:\n        lines = f.readlines()\n\n    print('line:',lines, '\\nline\
+          \ length:', len(lines))\n\n    print('Information about the artifact')\n\
+          \    print('Name:', input_data.name)\n    print('URI:', input_data.uri)\n\
+          \    print('Path:', input_data.path)\n    print('Metadata:', input_data.metadata)\n\
+          \n    # Load preprocessed data\n    train_data = np.load(os.path.join(input_data.path,\
+          \ 'train.npy'))\n    val_data = np.load(os.path.join(input_data.path, 'val.npy'))\n\
+          \n    # Prepare data for LSTM\n    def create_dataset(data, time_steps=1):\n\
+          \        X, y = [], []\n        for i in range(len(data) - time_steps):\n\
+          \            v = data[i:(i + time_steps), 0]\n            X.append(v)\n\
+          \            y.append(data[i + time_steps, 0])\n        return np.array(X),\
+          \ np.array(y)\n\n    time_steps = 24  # Use 24 hours of data to predict\
+          \ the next hour\n    X_train, y_train = create_dataset(train_data, time_steps)\n\
+          \    X_val, y_val = create_dataset(val_data, time_steps)\n\n    # Reshape\
+          \ input to be [samples, time steps, features]\n    X_train = np.reshape(X_train,\
+          \ (X_train.shape[0], X_train.shape[1], 1))\n    X_val = np.reshape(X_val,\
+          \ (X_val.shape[0], X_val.shape[1], 1))\n\n    # Define and compile LSTM\
+          \ model\n    model = tf.keras.models.Sequential([\n        tf.keras.layers.LSTM(50,\
+          \ activation='relu', input_shape=(time_steps, 1)),\n        tf.keras.layers.Dense(1)\n\
+          \    ])\n    model.compile(optimizer='adam', loss='mse')\n\n    # Train\
+          \ the model\n    history = model.fit(X_train, y_train, epochs=epochs, validation_data=(X_val,\
+          \ y_val), verbose=1)\n\n    # Save the trained model\n    model.save(os.path.join(trained_model.path,\
+          \ 'weather_model'))\n\n    # Log metrics\n    train_metrics.log_metric(\"\
+          train_loss\", history.history['loss'][-1])\n    train_metrics.log_metric(\"\
+          val_loss\", history.history['val_loss'][-1])\n\n    print(\"Model training\
+          \ is complete.\")\n\n"
+        image: python:3.8
+pipelineInfo:
+  description: A pipeline to train and deploy a time series forecasting model.
+  name: time-series-forecasting-pipeline
+root:
+  dag:
+    outputs:
+      artifacts:
+        evaluate-model-evaluation_metrics:
+          artifactSelectors:
+          - outputArtifactKey: evaluation_metrics
+            producerSubtask: evaluate-model
+        train-model-train_metrics:
+          artifactSelectors:
+          - outputArtifactKey: train_metrics
+            producerSubtask: train-model
+    tasks:
+      evaluate-model:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-model
+        dependentTasks:
+        - preprocess-data
+        - train-model
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: output_data
+                producerTask: preprocess-data
+            input_model:
+              taskOutputArtifact:
+                outputArtifactKey: trained_model
+                producerTask: train-model
+        taskInfo:
+          name: evaluate-model
+      preprocess-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-preprocess-data
+        taskInfo:
+          name: preprocess-data
+      train-model:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-model
+        dependentTasks:
+        - preprocess-data
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: output_data
+                producerTask: preprocess-data
+          parameters:
+            epochs:
+              componentInputParameter: epochs
+        taskInfo:
+          name: train-model
+  inputDefinitions:
+    parameters:
+      epochs:
+        defaultValue: 10.0
+        isOptional: true
+        parameterType: NUMBER_INTEGER
+  outputDefinitions:
+    artifacts:
+      evaluate-model-evaluation_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+      train-model-train_metrics:
+        artifactType:
+          schemaTitle: system.Metrics
+          schemaVersion: 0.0.1
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.8.0
